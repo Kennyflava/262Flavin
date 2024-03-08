@@ -17,6 +17,10 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ```{r cars}
 summary(cars)
+library(ggplot2) 
+library(tidyverse)
+library(purrr)
+library(ggpubr)
 ```
 
 ## Including Plots
@@ -27,11 +31,109 @@ You can also embed plots, for example:
 plot(pressure)
 ```
 
+```{r}
+# bring in autopower function
+source("assign 3/autopower.R")
+#source("../working/file.R")
+```
+
+## Add an additional super light car with mass 5,000 kg and a surface area 10m2
+```{r}
+# from looping.rmd: generate a structure to store info on our possible cars, add an additional car
+possible_cars = data.frame(name = c("A","B","C", "D"),mass=c(10000,65000,38000, 5000), area = c(22,30,22, 10))
+
+#converting average speed 
+speed_base <- 80*.28 
+
+possible_cars$power = autopower(V=speed_base, m=possible_cars$mass, A=possible_cars$area)
+
+head(possible_cars)
+
+#mean_speed <- 80 
+
+#nspeeds<- 500
+
+#speeds <- rlnorm(mean=mean_speed, sd=0.1*mean_speed, nspeeds)
+
+#summary(speeds)
+```
+
+## Compute the mean and maximum power for Cars A, B, C and for your new car, assuming that average highway speed is 80 km/hr with a standard deviation of 10km/hr; Use 2 different methods to compute the mean and maximum power for each car type; a) FOR loop and b) the pmap function from purr
+```{r}
+# using a for loop to calculate the mean power for each car 
+# Function to calculate power using autopower function
+# Constants
+rho <- 1.225  # air density in kg/m^3
+Cd <- 0.3    # drag coefficient assumed to be same for all cars
+area_A <- 8   # surface area for Car A in m^2
+area_B <- 9   # surface area for Car B in m^2
+area_C <- 10  # surface area for Car C in m^2
+area_D <- 10  # surface area for Car D in m^2
+mass_D <- 5000   # mass of Car D in kg
+
+# Function to calculate power using autopower function
+calculate_power_autopower <- function(speed, mass, area) {
+  autopower(speed, mass, area)
+}
+
+# Simulate speeds
+set.seed(123)  # for reproducibility
+speed_mean <- 80  # average highway speed in km/hr
+speed_sd <- 10    # standard deviation of speed in km/hr
+speeds <- rnorm(1000, mean = speed_mean, sd = speed_sd)
+
+# Function to calculate power for each car using pmap
+power_pmap_autopower <- function(mass, area) {
+  powers <- pmap_dbl(list(m = rep(mass, length(speeds)), A = rep(area, length(speeds)), speed = speeds), ~ calculate_power_autopower(..3, ..1, ..2))
+  list(mean_power = mean(powers), max_power = max(powers))
+}
+``` 
+
+```{r}
+# Calculate power for each car
+power_A_autopower <- power_pmap_autopower(1000, area_A)
+power_B_autopower <- power_pmap_autopower(1500, area_B)
+power_C_autopower <- power_pmap_autopower(2000, area_C)
+power_D_autopower <- power_pmap_autopower(5000, area_D)
+
+# Combine results
+results_autopower <- rbind(
+  c("Car A", power_A_autopower$mean_power, power_A_autopower$max_power),
+  c("Car B", power_B_autopower$mean_power, power_B_autopower$max_power),
+  c("Car C", power_C_autopower$mean_power, power_C_autopower$max_power),
+  c("Car D", power_D_autopower$mean_power, power_D_autopower$max_power)
+)
+
+# Create a data frame for plotting
+df_results_autopower <- as.data.frame(results_autopower)
+colnames(df_results_autopower) <- c("Car", "Mean_Power", "Max_Power")
+
+# Convert power values to numeric
+df_results_autopower$Mean_Power <- as.numeric(df_results_autopower$Mean_Power)
+df_results_autopower$Max_Power <- as.numeric(df_results_autopower$Max_Power)
+
+# Plot boxplots
+ggplot(df_results_autopower, aes(x = Car, y = Mean_Power)) +
+  geom_boxplot() +
+  labs(title = "Mean Power Consumption (autopower)",
+       y = "Mean Power (Watts)")
+
+ggplot(df_results_autopower, aes(x = Car, y = Max_Power)) +
+  geom_boxplot() +
+  labs(title = "Maximum Power Consumption (autopower)",
+       y = "Max Power (Watts)")
+```
+
+
+
+
 
 
 ```{r sampling2, eval=TRUE, echo=TRUE}
+## Practice Attempt of the looping.Rmd 
 
-source("../R/autopower.R")
+source("C:/Users/Kennedy Flavin/Dropbox/PC/Desktop/WINTER 24/262 Computing ENV SCI/262Flavin/assignments/assignments/assign 3/autopower.R")
+
 # generate a structure to store info on our possible cars
 possible_cars = data.frame(name = c("A","B","C"),mass=c(10000,65000,38000), area = c(22,30,22))
 
