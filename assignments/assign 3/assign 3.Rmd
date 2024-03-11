@@ -123,7 +123,88 @@ ggplot(df_results_autopower, aes(x = Car, y = Max_Power)) +
   labs(title = "Maximum Power Consumption (autopower)",
        y = "Max Power (Watts)")
 ```
+```{r}
+# Create an empty data frame to store results
+results_forloop <- list()
 
+# Define a function to calculate power using autopower function for a given car
+calculate_power_forloop <- function(mass, area) {
+  powers <- numeric(length(speeds))
+  for (i in seq_along(speeds)) {
+    powers[i] <- autopower(speeds[i], mass, area)
+  }
+  c(mean_power = mean(powers), max_power = max(powers))
+}
+
+# Calculate power for each car using FOR loop
+for (car_row in 1:nrow(possible_cars)) {
+  mass <- possible_cars$mass[car_row]
+  area <- possible_cars$area[car_row]
+  
+  power_forloop <- calculate_power_forloop(mass, area)
+  
+  # Append results to the list
+  results_forloop[[car_row]] <- c(possible_cars$name[car_row], power_forloop["mean_power"], power_forloop["max_power"])
+}
+
+# Convert the list to a data frame
+results_forloop <- do.call(rbind, results_forloop)
+results_forloop <- as.data.frame(results_forloop)
+
+# Rename columns
+colnames(results_forloop) <- c("Car", "Mean_Power", "Max_Power")
+
+# Convert power values to numeric
+results_forloop$Mean_Power <- as.numeric(results_forloop$Mean_Power)
+results_forloop$Max_Power <- as.numeric(results_forloop$Max_Power)
+
+# Plot boxplots for FOR loop results
+ggplot(results_forloop, aes(x = Car, y = Mean_Power)) +
+  geom_boxplot() +
+  labs(title = "Mean Power Consumption (FOR loop)",
+       y = "Mean Power (Watts)")
+
+ggplot(results_forloop, aes(x = Car, y = Max_Power)) +
+  geom_boxplot() +
+  labs(title = "Maximum Power Consumption (FOR loop)",
+       y = "Max Power (Watts)")
+```
+
+```{r}
+# Create a data frame with car information
+car_data <- data.frame(
+  Car = possible_cars$name,
+  Mass = possible_cars$mass,
+  Area = possible_cars$area
+)
+
+# Define a function to calculate power using autopower function for a given car
+calculate_power_pmap <- function(mass, area) {
+  powers <- pmap_dbl(list(m = rep(mass, length(speeds)), A = rep(area, length(speeds)), speed = speeds), ~ autopower(..3, ..1, ..2))
+  c(mean_power = mean(powers), max_power = max(powers))
+}
+
+# Use pmap to calculate power for each car
+results_pmap <- pmap_df(car_data[, c("Mass", "Area")], ~ calculate_power_pmap(..1, ..2))
+
+# Add Car names to the results_pmap data frame
+results_pmap$Car <- car_data$Car
+
+# Convert power values to numeric
+results_pmap$mean_power <- as.numeric(results_pmap$mean_power)
+results_pmap$max_power <- as.numeric(results_pmap$max_power)
+
+# Plot boxplots for pmap results
+ggplot(results_pmap, aes(x = Car, y = mean_power)) +
+  geom_boxplot() +
+  labs(title = "Mean Power Consumption (pmap)",
+       y = "Mean Power (Watts)")
+
+ggplot(results_pmap, aes(x = Car, y = max_power)) +
+  geom_boxplot() +
+  labs(title = "Maximum Power Consumption (pmap)",
+       y = "Max Power (Watts)")
+```
 
 
 
@@ -132,7 +213,7 @@ ggplot(df_results_autopower, aes(x = Car, y = Max_Power)) +
 ```{r sampling2, eval=TRUE, echo=TRUE}
 ## Practice Attempt of the looping.Rmd 
 
-source("C:/Users/Kennedy Flavin/Dropbox/PC/Desktop/WINTER 24/262 Computing ENV SCI/262Flavin/assignments/assignments/assign 3/autopower.R")
+source("C:/Users/Kennedy Flavin/Dropbox/PC/Desktop/WINTER 24/262 Computing ENV SCI/262Flavin/assignments/assignments/assign 3/autopower.R") 
 
 # generate a structure to store info on our possible cars
 possible_cars = data.frame(name = c("A","B","C"),mass=c(10000,65000,38000), area = c(22,30,22))
