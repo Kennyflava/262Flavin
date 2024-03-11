@@ -1,0 +1,166 @@
+---
+title: "assign 5a"
+author: "Kennedy Flavin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load required libraries
+library(dplyr)
+
+# Define the analyze_fish function
+analyze_fish <- function(fish_vector) {
+  # Filter out values that are not valid fish species
+  valid_fish_vector <- fish_vector[fish_vector != "x"]
+  # Convert the input vector to a data frame
+  fish_df <- data.frame(fish = valid_fish_vector)
+
+  # Calculate the most common fish
+  most_common_fish <- fish_df %>%
+    group_by(fish) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    slice(1)
+
+  # Calculate the rarest fish
+  rarest_fish <- fish_df %>%
+    group_by(fish) %>%
+    summarise(count = n()) %>%
+    arrange(count) %>%
+    slice(1)
+
+  # Calculate the total number of fish
+  total_fish <- nrow(fish_df)
+
+  # Return the results
+  return(list(most_common_fish = most_common_fish$fish,
+              rarest_fish = rarest_fish$fish,
+              total_fish = total_fish))
+}
+
+# Your fish data
+fish_data <- c("x", "salmon", "tuna", "steelhead", "cod", "tuna", "steelhead", "cod", "tuna", "cod", "salmon", "shark", "salmon", "salmon", "salmon", "steelhead", "salmon", "salmon", "tuna", "steelhead", "shark", "steelhead", "steelhead", "salmon", "salmon", "shark", "salmon", "steelhead", "salmon", "cod", "steelhead", "cod", "shark", "salmon", "salmon", "tuna", "cod", "steelhead", "steelhead", "salmon", "cod", "cod", "steelhead", "cod", "cod", "steelhead", "steelhead", "steelhead", "salmon", "shark", "tuna", "cod", "cod", "salmon", "cod", "steelhead", "salmon", "cod", "shark", "steelhead", "shark", "tuna", "cod", "salmon", "salmon", "cod", "salmon", "steelhead", "cod", "salmon", "cod", "steelhead", "steelhead", "steelhead", "salmon", "steelhead", "salmon", "cod", "cod", "shark", "steelhead", "steelhead", "cod", "cod", "steelhead", "steelhead", "cod", "steelhead", "salmon", "steelhead", "salmon", "steelhead", "salmon", "steelhead", "steelhead", "salmon", "steelhead", "cod", "cod", "steelhead", "salmon", "shark", "steelhead", "cod", "shark", "cod", "cod", "cod", "salmon", "shark", "steelhead", "cod", "salmon", "shark", "steelhead", "steelhead", "shark", "tuna", "shark", "tuna", "shark", "salmon", "salmon", "salmon", "shark", "salmon", "salmon", "salmon", "salmon", "tuna", "salmon", "salmon", "tuna", "cod", "salmon", "tuna", "salmon", "salmon", "cod", "steelhead", "cod", "salmon", "steelhead", "steelhead", "tuna", "salmon", "tuna", "salmon", "steelhead", "salmon", "salmon", "salmon", "salmon", "salmon", "steelhead", "steelhead", "cod", "steelhead", "salmon", "steelhead", "steelhead", "salmon", "tuna", "tuna", "shark", "cod", "cod", "tuna", "salmon", "salmon", "steelhead", "shark", "steelhead", "steelhead", "salmon", "salmon", "cod", "steelhead", "salmon", "salmon", "shark", "cod", "shark", "steelhead", "shark", "salmon", "salmon", "steelhead", "shark", "steelhead", "steelhead", "salmon", "steelhead", "cod", "salmon", "cod", "steelhead", "salmon", "salmon", "cod", "steelhead", "salmon", "shark", "steelhead", "cod", "steelhead", "steelhead", "cod", "tuna", "salmon", "tuna", "steelhead", "steelhead", "steelhead", "salmon", "salmon", "salmon", "cod", "cod", "salmon", "shark", "cod", "salmon", "salmon", "steelhead", "salmon", "cod", "steelhead", "salmon", "tuna", "steelhead", "steelhead", "steelhead", "salmon", "cod", "shark", "salmon", "salmon", "cod", "salmon", "shark", "salmon", "salmon", "steelhead", "tuna", "shark", "cod", "salmon", "cod", "steelhead", "steelhead", "salmon", "steelhead", "cod", "steelhead", "salmon", "tuna", "shark", "steelhead", "steelhead", "steelhead", "cod", "cod", "salmon", "steelhead", "tuna", "steelhead", "salmon", "tuna", "salmon", "cod", "cod", "salmon", "steelhead", "steelhead", "salmon", "salmon", "salmon", "cod", "salmon", "salmon", "shark", "steelhead", "salmon", "steelhead", "tuna", "salmon", "salmon", "salmon", "steelhead", "salmon", "salmon", "tuna", "steelhead", "shark", "steelhead", "cod", "tuna", "shark", "steelhead", "shark")
+
+# Apply the analyze_fish function
+result <- analyze_fish(fish_data)
+
+# Display the results
+cat("Most Common Fish:", result$most_common_fish, "\n")
+cat("Rarest Fish:", result$rarest_fish, "\n")
+cat("Total Number of Fish:", result$total_fish, "\n")
+
+## Most common fish: Salmon
+## Rarest Fish: Tuna
+## Total number of Fish: 300 
+
+```
+
+```{r}
+# Define the analyze_fish function for multiple catches
+# Generate some data if we had 10 different fishing days
+possible.fish <- c("salmon", "steelhead", "shark", "tuna", "cod")
+ndays <- 10
+catches <- round(runif(min = 3, max = 400, n = ndays))
+catches_res <- list(catches) %>% pmap(sample, x = possible.fish, replace = TRUE)
+
+# Define the analyze_fish function for multiple catches
+analyze_fish_multi <- function(catches_list) {
+  results <- lapply(catches_list, function(catch) {
+    # Filter out values that are not valid fish species
+    valid_fish_vector <- catch[catch != "x"]
+    
+    # Convert the filtered vector to a data frame
+    fish_df <- data.frame(fish = valid_fish_vector)
+
+    # Calculate the most common fish
+    most_common_fish <- fish_df %>%
+      group_by(fish) %>%
+      summarise(count = n()) %>%
+      arrange(desc(count)) %>%
+      slice(1)
+
+    # Calculate the rarest fish
+    rarest_fish <- fish_df %>%
+      group_by(fish) %>%
+      summarise(count = n()) %>%
+      arrange(count) %>%
+      slice(1)
+
+    # Calculate the total number of fish
+    total_fish <- nrow(fish_df)
+
+    # Return the results for each catch
+    return(list(most_common_fish = most_common_fish$fish,
+                rarest_fish = rarest_fish$fish,
+                total_fish = total_fish))
+  })
+
+  return(results)
+}
+
+# Example: Applying the function to catches_res
+summary_results <- analyze_fish_multi(catches_res)
+
+# Display the results for each fishing day
+for (i in seq_along(summary_results)) {
+  cat("Summary for Fishing Day", i, "\n")
+  cat("Most Common Fish:", summary_results[[i]]$most_common_fish, "\n")
+  cat("Rarest Fish:", summary_results[[i]]$rarest_fish, "\n")
+  cat("Total Number of Fish:", summary_results[[i]]$total_fish, "\n\n")
+}
+
+## RESULTS
+# Summary for Fishing Day 1 
+# Most Common Fish: steelhead 
+#Rarest Fish: tuna 
+#Total Number of Fish: 66 
+
+#Summary for Fishing Day 2 
+#Most Common Fish: shark 
+#Rarest Fish: steelhead 
+#Total Number of Fish: 60 
+
+#Summary for Fishing Day 3 
+#Most Common Fish: steelhead 
+#Rarest Fish: salmon 
+#Total Number of Fish: 62 
+
+#Summary for Fishing Day 4 
+#Most Common Fish: shark 
+#Rarest Fish: tuna 
+#Total Number of Fish: 207 
+
+#Summary for Fishing Day 5 
+#Most Common Fish: cod 
+#Rarest Fish: steelhead 
+#Total Number of Fish: 199 
+
+#Summary for Fishing Day 6 
+#Most Common Fish: tuna 
+#Rarest Fish: salmon 
+#Total Number of Fish: 248 
+
+#Summary for Fishing Day 7 
+#Most Common Fish: steelhead 
+#Rarest Fish: shark 
+#Total Number of Fish: 181 
+
+#Summary for Fishing Day 8 
+#Most Common Fish: steelhead 
+#Rarest Fish: salmon 
+#Total Number of Fish: 25 
+
+#Summary for Fishing Day 9 
+#Most Common Fish: salmon 
+#Rarest Fish: cod 
+#Total Number of Fish: 5 
+
+#Summary for Fishing Day 10 
+#Most Common Fish: cod 
+#Rarest Fish: salmon 
+#Total Number of Fish: 91 
+```
+
